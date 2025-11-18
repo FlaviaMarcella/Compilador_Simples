@@ -172,7 +172,6 @@ sudo apt-get install gcc make flex bison graphviz
 ## 📖 Documentação Adicional
 
 - **[ESTRUTURA.md](ESTRUTURA.md)** - Descrição detalhada da estrutura do projeto
-- 
 ---
 
 ## 📄 Licença
