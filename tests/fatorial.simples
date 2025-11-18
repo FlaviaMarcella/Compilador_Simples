@@ -1,0 +1,23 @@
+/*========================================================
+| UNIFAL - Universidade Federal de Alfenas
+| BACHARELADO EM CIENCIA DA COMPUTACAO
+|
+| Trabalho: Construcao Arvore Sintatica e Geracao de Codigo
+| Disciplina: Teoria de Linguagens e Compiladores
+| Professor: Luiz Eduardo da Silva
+| 
+| Arquivo: fatorial.simples
+| Descricao: Programa de teste - calcula fatorial de um numero
+========================================================*/
+
+programa fatorial
+    inteiro n fat
+inicio
+    leia n
+    fat <- 1
+    enquanto n > 0 faca
+        fat <- fat * n
+        n <- n - 1
+    fimenquanto
+    escreva fat
+fimprograma

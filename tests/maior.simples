@@ -1,0 +1,23 @@
+/*========================================================
+| UNIFAL - Universidade Federal de Alfenas
+| BACHARELADO EM CIENCIA DA COMPUTACAO
+|
+| Trabalho: Construcao Arvore Sintatica e Geracao de Codigo
+| Disciplina: Teoria de Linguagens e Compiladores
+| Professor: Luiz Eduardo da Silva
+| 
+| Arquivo: maior.simples
+| Descricao: Programa de teste - encontra o maior entre dois numeros
+========================================================*/
+
+programa maior
+    inteiro a b
+inicio
+    leia a
+    leia b
+    se nao (a < b) entao
+        escreva a
+    senao
+        escreva b
+    fimse
+fimprograma

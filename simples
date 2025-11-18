@@ -1,0 +1,206 @@
+#!/bin/bash
+# ============================================================
+# Script Wrapper - Compilador Linguagem Simples
+# UNIFAL - Universidade Federal de Alfenas
+# ============================================================
+#
+# Uso: ./simples <programa>
+#
+# Este script automatiza o processo de compilação e execução
+# de programas escritos na Linguagem Simples.
+#
+# Exemplo:
+#   ./simples tests/dobro
+#   ./simples fatorial
+# ============================================================
+
+# Cores para output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Diretórios
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+BUILD_DIR="$SCRIPT_DIR/build"
+TESTS_DIR="$SCRIPT_DIR/tests"
+COMPILADOR="$BUILD_DIR/compilador"
+MVS="$BUILD_DIR/mvs"
+
+# Função de ajuda
+show_help() {
+    echo -e "${BLUE}============================================================${NC}"
+    echo -e "${BLUE}  Compilador Linguagem Simples - UNIFAL${NC}"
+    echo -e "${BLUE}============================================================${NC}"
+    echo ""
+    echo "Uso: ./simples [opções] <programa>"
+    echo ""
+    echo "Opções:"
+    echo "  -ast         Gera apenas a árvore sintática (.dot)"
+    echo "  -mvs         Gera apenas o código MVS (.mvs)"
+    echo "  -h, --help   Mostra esta mensagem"
+    echo ""
+    echo "Exemplos:"
+    echo "  ./simples tests/dobro        # Compila e executa"
+    echo "  ./simples -ast fatorial      # Apenas gera AST"
+    echo "  ./simples -mvs maior         # Apenas gera MVS"
+    echo ""
+}
+
+# Função para verificar se o compilador foi construído
+check_compiler() {
+    if [ ! -f "$COMPILADOR" ] || [ ! -f "$MVS" ]; then
+        echo -e "${YELLOW}⚠ Compilador não encontrado. Compilando...${NC}"
+        cd "$SCRIPT_DIR"
+        make all > /dev/null 2>&1
+        if [ $? -ne 0 ]; then
+            echo -e "${RED}✗ Erro ao compilar o projeto!${NC}"
+            echo -e "${YELLOW}Execute 'make all' manualmente para ver os erros.${NC}"
+            exit 1
+        fi
+        echo -e "${GREEN}✓ Compilador construído com sucesso!${NC}"
+        echo ""
+    fi
+}
+
+# Função para normalizar o caminho do arquivo
+normalize_path() {
+    local input="$1"
+    
+    # Remove extensão .simples se existir
+    input="${input%.simples}"
+    
+    # Se o arquivo não existe no caminho especificado, tenta em tests/
+    if [ ! -f "${input}.simples" ]; then
+        if [ -f "$TESTS_DIR/${input##*/}.simples" ]; then
+            echo "$TESTS_DIR/${input##*/}"
+            return
+        fi
+    fi
+    
+    echo "$input"
+}
+
+# Processa argumentos
+MODE="full"
+PROGRAMA=""
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -ast)
+            MODE="ast"
+            shift
+            ;;
+        -mvs)
+            MODE="mvs"
+            shift
+            ;;
+        -h|--help)
+            show_help
+            exit 0
+            ;;
+        *)
+            PROGRAMA="$1"
+            shift
+            ;;
+    esac
+done
+
+# Verifica se o programa foi especificado
+if [ -z "$PROGRAMA" ]; then
+    echo -e "${RED}✗ Erro: Nenhum programa especificado!${NC}"
+    echo ""
+    show_help
+    exit 1
+fi
+
+# Normaliza o caminho do programa
+PROGRAMA=$(normalize_path "$PROGRAMA")
+
+# Verifica se o arquivo existe
+if [ ! -f "${PROGRAMA}.simples" ]; then
+    echo -e "${RED}✗ Erro: Arquivo não encontrado: ${PROGRAMA}.simples${NC}"
+    exit 1
+fi
+
+# Verifica se o compilador está construído
+check_compiler
+
+# Nome base do arquivo (sem diretório e extensão)
+BASENAME=$(basename "$PROGRAMA")
+
+echo -e "${BLUE}============================================================${NC}"
+echo -e "${BLUE}  Processando: ${BASENAME}.simples${NC}"
+echo -e "${BLUE}============================================================${NC}"
+echo ""
+
+# Modo AST apenas
+if [ "$MODE" = "ast" ]; then
+    echo -e "${YELLOW}[1/1] Gerando árvore sintática...${NC}"
+    $COMPILADOR -ast "$PROGRAMA"
+    
+    if [ $? -eq 0 ]; then
+        echo ""
+        echo -e "${GREEN}✓ Árvore sintática gerada: ${PROGRAMA}.dot${NC}"
+        
+        # Tenta gerar PNG se graphviz estiver instalado
+        if command -v dot &> /dev/null; then
+            echo -e "${YELLOW}[+] Gerando visualização PNG...${NC}"
+            dot -Tpng "${PROGRAMA}.dot" -o "${PROGRAMA}.png"
+            if [ $? -eq 0 ]; then
+                echo -e "${GREEN}✓ Imagem gerada: ${PROGRAMA}.png${NC}"
+            fi
+        fi
+    else
+        echo -e "${RED}✗ Erro na análise sintática!${NC}"
+        exit 1
+    fi
+    exit 0
+fi
+
+# Modo MVS apenas
+if [ "$MODE" = "mvs" ]; then
+    echo -e "${YELLOW}[1/1] Gerando código MVS...${NC}"
+    $COMPILADOR "$PROGRAMA"
+    
+    if [ $? -eq 0 ]; then
+        echo ""
+        echo -e "${GREEN}✓ Código MVS gerado: ${PROGRAMA}.mvs${NC}"
+        echo -e "${BLUE}Execute com: $MVS $PROGRAMA${NC}"
+    else
+        echo -e "${RED}✗ Erro na geração de código!${NC}"
+        exit 1
+    fi
+    exit 0
+fi
+
+# Modo completo (compilar e executar)
+echo -e "${YELLOW}[1/2] Compilando programa...${NC}"
+$COMPILADOR "$PROGRAMA" > /dev/null 2>&1
+
+if [ $? -ne 0 ]; then
+    echo -e "${RED}✗ Erro na compilação!${NC}"
+    $COMPILADOR "$PROGRAMA"
+    exit 1
+fi
+
+echo -e "${GREEN}✓ Compilação concluída!${NC}"
+echo ""
+echo -e "${YELLOW}[2/2] Executando programa...${NC}"
+echo -e "${BLUE}------------------------------------------------------------${NC}"
+
+$MVS "$PROGRAMA"
+EXIT_CODE=$?
+
+echo -e "${BLUE}------------------------------------------------------------${NC}"
+
+if [ $EXIT_CODE -eq 0 ]; then
+    echo ""
+    echo -e "${GREEN}✓ Execução concluída com sucesso!${NC}"
+else
+    echo ""
+    echo -e "${RED}✗ Erro na execução! (código: $EXIT_CODE)${NC}"
+fi
+
+exit $EXIT_CODE
