@@ -46,8 +46,6 @@ compilador_simpless/
 │
 ├── docs/                   # Documentação
 │   ├── README.md           # Este arquivo
-│   ├── CORRECOES_REALIZADAS.md
-│   ├── PROBLEMAS_IDENTIFICADOS.md
 │   └── ESTRUTURA.md
 │
 └── Makefile                # Sistema de build
