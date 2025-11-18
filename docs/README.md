@@ -125,30 +125,6 @@ echo "5" | ./build/mvs tests/dobro
 
 ---
 
-## 🔧 Correções Realizadas
-
-O código base fornecido pelo professor continha vários problemas que foram corrigidos:
-
-### ✅ **Problema 1: Árvore Sintática Invertida**
-- **Causa**: Função `adicionaFilho()` inseria filhos no início da lista
-- **Solução**: Modificada para inserir no final da lista
-
-### ✅ **Problema 2: Ordem dos Operandos Invertida**
-- **Causa**: Regras de expressão adicionavam operandos na ordem errada
-- **Solução**: Invertida a ordem de adição dos operandos
-
-### ✅ **Problema 3: Bug de Travamento na MVS**
-- **Causa**: Compilador gerava endereço em vez do número do rótulo para desvios
-- **Solução**: Corrigido para gerar o número do rótulo correto
-
-### ✅ **Problema 4: Lexema Sobrescrito em Atribuições**
-- **Causa**: Variável global `atomo` era sobrescrita durante o parsing
-- **Solução**: Implementado uso de `yylval` para passar lexemas via valores semânticos
-
-**Detalhes completos**: Veja [`CORRECOES_REALIZADAS.md`](CORRECOES_REALIZADAS.md)
-
----
-
 ## 📊 Testes
 
 ### **Programa: dobro.simples**
@@ -198,9 +174,7 @@ sudo apt-get install gcc make flex bison graphviz
 ## 📖 Documentação Adicional
 
 - **[ESTRUTURA.md](ESTRUTURA.md)** - Descrição detalhada da estrutura do projeto
-- **[CORRECOES_REALIZADAS.md](CORRECOES_REALIZADAS.md)** - Documentação completa das correções
-- **[PROBLEMAS_IDENTIFICADOS.md](PROBLEMAS_IDENTIFICADOS.md)** - Análise dos problemas encontrados
-
+- 
 ---
 
 ## 📄 Licença
