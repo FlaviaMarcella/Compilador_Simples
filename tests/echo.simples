@@ -1,0 +1,6 @@
+programa echo
+    inteiro n
+inicio
+    leia n
+    escreva n
+fimprograma

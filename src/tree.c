@@ -21,6 +21,7 @@ ptno criaNo(int tipo, int valor) {
     ptno n = (ptno) malloc(sizeof(struct no));
     n->tipo = tipo;
     n->valor = valor;
+    n->tipo_expr = -1;
     n->lexema = NULL;
     n->filho = NULL;
     n->irmao = NULL;
@@ -32,6 +33,7 @@ ptno criaNoLexema(int tipo, char *lex) {
     ptno n = (ptno) malloc(sizeof(struct no));
     n->tipo = tipo;
     n->valor = -1;
+    n->tipo_expr = -1;
     if (lex) {
         n->lexema = (char *) malloc(strlen(lex) + 1);
         strcpy(n->lexema, lex);

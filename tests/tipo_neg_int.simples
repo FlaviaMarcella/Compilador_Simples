@@ -1,0 +1,8 @@
+programa tipo_neg_int
+    inteiro a
+inicio
+    leia a
+    se nao a entao
+        escreva 1
+    fimse
+fimprograma

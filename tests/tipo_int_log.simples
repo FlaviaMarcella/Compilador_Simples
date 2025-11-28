@@ -1,0 +1,8 @@
+programa tipo_int_log
+    inteiro a b c
+inicio
+    leia a
+    leia b
+    c <- a < b
+    escreva c
+fimprograma

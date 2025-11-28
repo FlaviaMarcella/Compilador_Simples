@@ -29,6 +29,163 @@ int ROTULO = 0;
 
 void gera_expressao(ptno p);
 
+/**
+ * Primeira passada: coleta tipos de variáveis declaradas
+ */
+void coleta_tipos(ptno p) {
+    if (p == NULL) return;
+
+    ptno p1;
+
+    switch(p->tipo) {
+        case PRG:
+            p1 = p->filho;
+            if (p1 && p1->tipo == IDENT) p1 = p1->irmao;
+
+            if (p1 && p1->tipo == DVR) {
+                coleta_tipos(p1);
+            }
+            break;
+
+        case DVR:
+            p1 = p->filho;
+            int tipo_atual = INT;
+
+            if (p1 && p1->tipo == TIPO) {
+                tipo_atual = p1->valor;
+                p1 = p1->irmao;
+            }
+
+            while (p1) {
+                if (p1->tipo == LVR) {
+                    ptno id = p1->filho;
+                    while (id) {
+                        if (id->tipo == IDENT && id->lexema) {
+                            insereSimbolo(id->lexema, tipo_atual, NUM_VAR);
+                            NUM_VAR++;
+                        }
+                        id = id->irmao;
+                    }
+                }
+                p1 = p1->irmao;
+            }
+            break;
+
+        default:
+            p1 = p->filho;
+            while (p1) {
+                coleta_tipos(p1);
+                p1 = p1->irmao;
+            }
+    }
+}
+
+/**
+ * Segunda passada: propaga tipos de variáveis para nós de expressão
+ */
+void propaga_tipos(ptno p) {
+    if (p == NULL) return;
+
+    ptno p1;
+
+    switch(p->tipo) {
+        case ATR: {
+            /* Atribuição: IDENT <- EXPR */
+            /* Verifica se tipo da expressão bate com tipo da variável */
+            ptno ident_node = p->filho;  /* IDENT */
+            ptno expr_node = ident_node ? ident_node->irmao : NULL;  /* EXPR */
+            
+            if (expr_node) {
+                propaga_tipos(expr_node);
+                
+                if (ident_node && ident_node->lexema) {
+                    int var_tipo = buscaTipo(ident_node->lexema);
+                    int expr_tipo = expr_node->tipo_expr;
+                    
+                    if (var_tipo != expr_tipo && var_tipo != UND && expr_tipo != UND) {
+                        fprintf(stderr, "✗ Erro de tipo: atribuição incompatível\n");
+                        fprintf(stderr, "  Variável '%s' é tipo %s, mas expressão é tipo %s\n",
+                                ident_node->lexema,
+                                var_tipo == INT ? "INT" : "LOG",
+                                expr_tipo == INT ? "INT" : "LOG");
+                        erro_tipo = 1;
+                    }
+                }
+            }
+            break;
+        }
+
+        case VAR:
+            if (p->lexema) {
+                p->tipo_expr = buscaTipo(p->lexema);
+            }
+            break;
+
+        case NUM:
+            p->tipo_expr = INT;
+            break;
+
+        case VRD:
+        case FLS:
+            p->tipo_expr = LOG;
+            break;
+
+        case SOMA:
+        case SUBT:
+        case MULT:
+        case DIVI:
+            p1 = p->filho;
+            while (p1) {
+                propaga_tipos(p1);
+                p1 = p1->irmao;
+            }
+            if (p->filho && p->filho->irmao) {
+                p->tipo_expr = verificaTipo(p->filho->tipo_expr, p->filho->irmao->tipo_expr, p->tipo);
+            }
+            break;
+
+        case MAI:
+        case MEN:
+        case IGU:
+            p1 = p->filho;
+            while (p1) {
+                propaga_tipos(p1);
+                p1 = p1->irmao;
+            }
+            if (p->filho && p->filho->irmao) {
+                p->tipo_expr = verificaTipo(p->filho->tipo_expr, p->filho->irmao->tipo_expr, p->tipo);
+            }
+            break;
+
+        case CONJ:
+        case DISJ:
+            p1 = p->filho;
+            while (p1) {
+                propaga_tipos(p1);
+                p1 = p1->irmao;
+            }
+            if (p->filho && p->filho->irmao) {
+                p->tipo_expr = verificaTipo(p->filho->tipo_expr, p->filho->irmao->tipo_expr, p->tipo);
+            }
+            break;
+
+        case NEG:
+            p1 = p->filho;
+            if (p1) {
+                propaga_tipos(p1);
+                p->tipo_expr = verificaUnaria(p1->tipo_expr, NEG);
+            }
+            break;
+
+        default:
+            p1 = p->filho;
+            while (p1) {
+                propaga_tipos(p1);
+                p1 = p1->irmao;
+            }
+    }
+}
+
 void gera_codigo(ptno p) {
     if (p == NULL) return;
     
@@ -38,8 +195,7 @@ void gera_codigo(ptno p) {
     switch(p->tipo) {
         case PRG:
             fprintf(yyout, "\tINPP\n");
-            limpa_simbolos();
-            NUM_VAR = 0;
+            fprintf(yyout, "\tAMEM\t%d\n", NUM_VAR);
             
             p1 = p->filho;
             if (p1 && p1->tipo == IDENT) p1 = p1->irmao;  /* Pula o identificador do programa */
@@ -47,8 +203,6 @@ void gera_codigo(ptno p) {
             if (p1 && p1->tipo == DVR) {
                 gera_codigo(p1);
             }
-            
-            fprintf(yyout, "\tAMEM\t%d\n", NUM_VAR);
             
             p2 = p1;
             while (p2 && p2->tipo != LCM) p2 = p2->irmao;
@@ -59,20 +213,8 @@ void gera_codigo(ptno p) {
             break;
             
         case DVR:
-            p1 = p->filho;
-            while (p1) {
-                if (p1->tipo == LVR) {
-                    ptno id = p1->filho;
-                    while (id) {
-                        if (id->tipo == IDENT && id->lexema) {
-                            insereSimbolo(id->lexema, NUM_VAR);
-                            NUM_VAR++;
-                        }
-                        id = id->irmao;
-                    }
-                }
-                p1 = p1->irmao;
-            }
+            /* DVR já foi processado em coleta_tipos() */
+            /* Aqui apenas pulamos durante gera_codigo */
             break;
             
         case LCM:
@@ -358,6 +500,20 @@ int main(int argc, char **argv) {
     yyin = entrada;
     
     if (yyparse() == 0 && raiz != NULL) {
+        /* Primeira passada: coleta tipos declarados */
+        NUM_VAR = 0;
+        coleta_tipos(raiz);
+        
+        /* Segunda passada: propaga tipos nas expressões */
+        propaga_tipos(raiz);
+        
+        /* Verifica se houve erros de tipo */
+        if (erro_tipo) {
+            fprintf(stderr, "✗ ERRO DE TIPO DETECTADO!\n");
+            fprintf(stderr, "  Corrija os erros acima antes de compilar.\n");
+            return 1;
+        }
+        
         if (modo_ast) {
             // MODO AST (Etapa 1)
             char nome_dot[256];

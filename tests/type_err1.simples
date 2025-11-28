@@ -1,0 +1,18 @@
+/*========================================================
+| UNIFAL - Universidade Federal de Alfenas
+| BACHARELADO EM CIENCIA DA COMPUTACAO
+|
+| Trabalho: Construcao Arvore Sintatica e Geracao de Codigo
+| Disciplina: Teoria de Linguagens e Compiladores
+| Professor: Luiz Eduardo da Silva
+| 
+| Arquivo: dobro.simples
+| Descricao: Programa de teste - calcula o dobro de um numero
+========================================================*/
+
+programa dobro
+    inteiro n
+inicio
+    leia n
+    escreva 2 * n
+fimprograma

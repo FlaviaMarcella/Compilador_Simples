@@ -1,0 +1,7 @@
+programa tiperrorsimples
+    inteiro x y
+inicio
+    leia x
+    y <- x < 5
+    escreva y
+fimprograma

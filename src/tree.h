@@ -48,11 +48,12 @@
 typedef struct no *ptno;
 
 struct no {
-    int tipo;      /* Tipo do no */
-    int valor;     /* Valor numerico (para numeros/tipos) */
-    char *lexema;  /* Lexema (para identificadores) */
-    ptno filho;    /* Primeiro filho */
-    ptno irmao;    /* Proximo irmao */
+    int tipo;       /* Tipo do no */
+    int valor;      /* Valor numerico (para numeros) */
+    int tipo_expr;  /* Tipo da expressao (INT/LOG/UND) */
+    char *lexema;   /* Lexema (para identificadores) */
+    ptno filho;     /* Primeiro filho */
+    ptno irmao;     /* Proximo irmao */
 };
 
 /* Prototipos de funcoes */

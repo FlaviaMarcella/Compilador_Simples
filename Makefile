@@ -8,8 +8,8 @@
 # ============ CONFIGURAÇÕES ============
 CC = gcc
 CFLAGS = -Wall -g
-LEX = flex
-YACC = bison
+LEX = win_flex
+YACC = win_bison
 YFLAGS = -v -d
 
 # ============ DIRETÓRIOS ============
@@ -102,6 +102,8 @@ $(BUILD_DIR):
 clean:
 	@echo "Limpando arquivos de build..."
 	@rm -rf $(BUILD_DIR)
+	@echo "Limpando arquivos de saída dos testes..."
+	@rm -f $(TESTS_DIR)/*.dot $(TESTS_DIR)/*.mvs
 	@echo "✓ Limpeza concluída!"
 
 # ============ TESTES ============

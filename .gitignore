@@ -4,3 +4,6 @@ build/
 # Ignorar arquivos e diretórios relacionados a testes
 *.dot
 *.mvs
+
+# Ignorar configurações do VS Code
+.vscode/
