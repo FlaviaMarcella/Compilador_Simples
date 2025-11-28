@@ -26,7 +26,7 @@ MVS = $(BUILD_DIR)/mvs
 TREE_SRC = $(SRC_DIR)/tree.c
 UTILS_SRC = $(SRC_DIR)/utils.c
 MVS_SRC = $(SRC_DIR)/mvs.c
-LEXICO_L = $(SRC_DIR)/lexico_ast.l
+LEXICO_L = $(SRC_DIR)/lexico.l
 SINTATICO_Y = $(SRC_DIR)/sintatico.y
 
 # ============ ARQUIVOS INTERMEDIÁRIOS ============
